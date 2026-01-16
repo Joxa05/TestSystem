@@ -73,6 +73,27 @@ async def health():
         "active_clients": len(active_clients),
         "admin_connections": len(admin_connections)
     }
+# HTML Routes
+from fastapi.templating import Jinja2Templates
+from fastapi.requests import Request
+
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+@app.get("/client", response_class=HTMLResponse)
+async def client_page(request: Request):
+    return templates.TemplateResponse("client.html", {"request": request})
+
+@app.get("/admin/dashboard", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    return templates.TemplateResponse("admin_dashboard.html", {"request": request})
 
 if __name__ == "__main__":
     import uvicorn

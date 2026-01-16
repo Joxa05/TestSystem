@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - TestSystem</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logout-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            color: #667eea;
+        }
+        .clients-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .client-card {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .client-card:hover {
+            background: #f8f9fa;
+        }
+        .client-card.active {
+            background: #e8eaf6;
+            border-left: 4px solid #667eea;
+        }
+        .client-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .client-status {
+            font-size: 12px;
+            color: #27ae60;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f7fa;
+        }
+        .no-selection {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #999;
+            font-size: 18px;
+        }
+        .client-view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+        .client-view.active {
+            display: flex;
+        }
+        .client-header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .client-header h2 {
+            color: #667eea;
+        }
+        .split-view {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .test-preview {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .question-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .question-number {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .answer-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .send-answer-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .send-answer-btn:hover {
+            background: #5568d3;
+        }
+        .chat-panel {
+            width: 350px;
+            background: white;
+            border-left: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .message.admin {
+            background: #e8f5e9;
+            margin-left: 20px;
+        }
+        .message.client {
+            background: #e3f2fd;
+            margin-right: 20px;
+        }
+        .message-sender {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        .message-text {
+            color: #333;
+        }
+        .chat-input-area {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            resize: none;
+            font-family: inherit;
+        }
+        .chat-send-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .chat-send-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👨‍💼 Панель администратора</h1>
+        <button class="logout-btn" onclick="logout()">Выйти</button>
+    </div>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                Активные клиенты (<span id="clientCount">0</span>)
+            </div>
+            <div class="clients-list" id="clientsList">
+                <!-- Clients will be dynamically added here -->
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="no-selection" id="noSelection">
+                Выберите клиента из списка слева
+            </div>
+            
+            <div class="client-view" id="clientView">
+                <div class="client-header">
+                    <h2 id="selectedClientName">Клиент</h2>
+                </div>
+                <div class="split-view">
+                    <div class="test-preview" id="testPreview">
+                        <!-- Questions will be displayed here -->
+                    </div>
+                    <div class="chat-panel">
+                        <div class="chat-header">💬 Чат</div>
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages will appear here -->
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea class="chat-input" id="chatInput" placeholder="Введите ответ..." rows="3"></textarea>
+                            <button class="chat-send-btn" onclick="sendMessage()">Отправить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        
+        if (!token || role !== 'admin') {
+            window.location.href = '/';
+        }
+
+        let activeClients = {};
+        let selectedClientId = null;
+
+        // Mock data for testing
+        const mockClients = [
+            { id: 'client1', username: 'client1', status: 'online' },
+        ];
+
+        const mockQuestions = [
+            {id: 1, text: "Инкапсуляцияга это:", options: ["A", "B", "C", "D"]},
+            {id: 2, text: "Вопрос 2", options: ["A", "B", "C", "D"]},
+            {id: 3, text: "Вопрос 3", options: ["A", "B", "C", "D"]},
+        ];
+
+        function renderClients() {
+            const clientsList = document.getElementById('clientsList');
+            const clientCount = document.getElementById('clientCount');
+            
+            clientsList.innerHTML = mockClients.map(client => `
+                <div class="client-card" onclick="selectClient('${client.id}', '${client.username}')">
+                    <div class="client-name">${client.username}</div>
+                    <div class="client-status">
+                        <div class="status-dot"></div>
+                        Онлайн
+                    </div>
+                </div>
+            `).join('');
+            
+            clientCount.textContent = mockClients.length;
+        }
+
+        function selectClient(clientId, username) {
+            selectedClientId = clientId;
+            document.getElementById('noSelection').style.display = 'none';
+            document.getElementById('clientView').classList.add('active');
+            document.getElementById('selectedClientName').textContent = username;
+            
+            // Remove active class from all cards
+            document.querySelectorAll('.client-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // Add active class to selected card
+            event.currentTarget.classList.add('active');
+            
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const testPreview = document.getElementById('testPreview');
+            testPreview.innerHTML = mockQuestions.map((q, index) => `
+                <div class="question-card">
+                    <div class="question-number">Вопрос ${index + 1}/${mockQuestions.length}</div>
+                    <div class="question-text">${q.text}</div>
+                    <input type="text" class="answer-input" placeholder="Введите ответ (A, B, C, D)..." data-question="${q.id}">
+                    <button class="send-answer-btn" onclick="sendQuickAnswer(${q.id})">Отправить ответ</button>
+                </div>
+            `).join('');
+        }
+
+        function sendQuickAnswer(questionId) {
+            const input = document.querySelector(`[data-question="${questionId}"]`);
+            const answer = input.value.trim();
+            if (!answer) return;
+            
+            sendMessage(`Вопрос ${questionId}: ${answer}`);
+            input.value = '';
+        }
+
+        function sendMessage(customText) {
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const text = customText || chatInput.value.trim();
+            
+            if (!text || !selectedClientId) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message admin';
+            messageDiv.innerHTML = `
+                <div class="message-sender">Админ</div>
+                <div class="message-text">${text}</div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            if (!customText) {
+                chatInput.value = '';
+            }
+            
+            // TODO: Send via WebSocket
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            window.location.href = '/';
+        }
+
+        // Initialize
+        renderClients();
+    </script>
+</body>
+</html>
